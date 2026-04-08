@@ -116,7 +116,7 @@ function App() {
         <div className="flex items-center justify-center gap-4 mb-2">
           <Shield className="w-12 h-12 text-cyber-neon animate-pulse-fast" />
           <h1 className="text-5xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyber-neon via-white to-purple-500 drop-shadow-[0_0_10px_rgba(0,243,255,0.5)]">
-            DEEPFAKE DETECTIVE
+            DEEPSCAN
           </h1>
         </div>
         <div className="flex items-center justify-center gap-2 text-cyber-neon/60 text-sm tracking-[0.3em]">

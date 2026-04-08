@@ -1,4 +1,4 @@
-# 🕵️‍♂️ Deepfake Detective System
+# 🕵️‍♂️ DeepScan
 
 <div align="center">
 
@@ -17,7 +17,7 @@
 
 ## 🎯 Overview
 
-Deepfake Detective is an advanced detection system that combines multiple AI models with forensic analysis techniques to identify manipulated media. Built with a cyberpunk-inspired React frontend and a powerful FastAPI backend, it employs a "triple-agent" approach using two specialized Vision Transformers and a forensic analysis engine.
+DeepScan is an advanced detection system that combines multiple AI models with forensic analysis techniques to identify manipulated media. Built with a cyberpunk-inspired React frontend and a powerful FastAPI backend, it employs a "triple-agent" approach using two specialized Vision Transformers and a forensic analysis engine.
 
 ## ✨ Features
 
@@ -100,8 +100,8 @@ The system employs a **triple-agent approach** where each component specializes 
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/farazmirzax/deepfake-detection-system.git
-cd deepfake-detection-system
+git clone https://github.com/farazmirzax/deepscan.git
+cd deepscan
 ```
 
 ### 2️⃣ Backend Setup
@@ -233,6 +233,6 @@ This project is licensed under the MIT License.
 
 **Built with 🧠 by [Faraz Mirza](https://github.com/farazmirzax)**
 
-[Report Bug](https://github.com/farazmirzax/deepfake-detection-system/issues) • [Request Feature](https://github.com/farazmirzax/deepfake-detection-system/issues)
+[Report Bug](https://github.com/farazmirzax/deepscan/issues) • [Request Feature](https://github.com/farazmirzax/deepscan/issues)
 
 </div>

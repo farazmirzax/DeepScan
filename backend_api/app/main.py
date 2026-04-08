@@ -18,7 +18,7 @@ except ImportError:
     print("⚠️ MediaPipe not found. 'Prism' Face Geometry scanner will be skipped.")
 
 # --- 1. SETUP APP ---
-app = FastAPI(title="Deepfake Detective (CSI Edition)")
+app = FastAPI(title="DeepScan (CSI Edition)")
 
 app.add_middleware(
     CORSMiddleware,
