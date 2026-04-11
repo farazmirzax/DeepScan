@@ -280,7 +280,84 @@ async def scan_image(file: UploadFile = File(...)):
 # --- 5. ENDPOINT: SCAN VIDEO LINK 🎥 ---
 @app.post("/scan-video/")
 async def scan_video(request: VideoRequest):
-    return {"verdict": "REAL", "confidence_score": "0.00%", "analysis": "Video scanning disabled for Image Test."}
+    print(f"🎥 Agent received video URL: {request.url}")
+    
+    video_path = None
+    try:
+        # --- PHASE 1: DOWNLOAD VIDEO ---
+        video_path = download_video(request.url)
+        if not video_path:
+            return {"verdict": "ERROR", "confidence_score": "0.00%", "analysis": "Could not download video. The URL might be private or invalid."}
+        
+        # --- PHASE 2: EXTRACT KEYFRAMES ---
+        # Extracts up to 5 clear faces across the duration of the video
+        faces = extract_faces_from_video(video_path, max_frames=5)
+        if not faces:
+            return {"verdict": "ERROR", "confidence_score": "0.00%", "analysis": "No clear human faces detected in the video stream."}
+        
+        highest_fake_score = 0.0
+        critical_flags = []
+        
+        # --- PHASE 3: SCAN EACH FRAME ---
+        for i, face_img in enumerate(faces):
+            if detector_swap and detector_gen:
+                preds_swap = detector_swap(face_img)
+                preds_gen = detector_gen(face_img)
+                score_swap = get_fake_probability(preds_swap, "Vigilante-V2")
+                score_gen = get_fake_probability(preds_gen, "Sentinel-X")
+            else:
+                score_swap, score_gen = 0.5, 0.5
+            
+            # Weighted Logic per frame
+            if score_swap > 0.9 or score_gen > 0.9:
+                frame_score = max(score_swap, score_gen) * 100
+            else:
+                frame_score = ((score_swap * 0.5) + (score_gen * 0.5)) * 100
+                
+            # Track the highest threat level across the whole video
+            if frame_score > highest_fake_score:
+                highest_fake_score = frame_score
+                
+            # Log specific frame threats
+            if score_swap > 0.9:
+                critical_flags.append(f"• Frame {i+1}: Vigilante-V2 detected Face Swap artifacts ({score_swap*100:.1f}%).")
+            if score_gen > 0.9:
+                critical_flags.append(f"• Frame {i+1}: Sentinel-X detected GAN textures ({score_gen*100:.1f}%).")
+
+        # --- PHASE 4: VERDICT LOGIC (Zero-Trust MAX Logic) ---
+        verdict = "FAKE" if highest_fake_score > 50 else "REAL"
+        
+        display_score = highest_fake_score
+        if verdict == "REAL":
+            display_score = 100 - highest_fake_score
+            
+        # --- PHASE 5: COMPILE REPORT ---
+        report_lines = [f"• VIDEO SCAN COMPLETE: Analyzed {len(faces)} facial keyframes."]
+        
+        if verdict == "FAKE":
+            # Remove duplicates using set, but keep order
+            report_lines.extend(list(dict.fromkeys(critical_flags)))
+        else:
+            report_lines.append("• CLEAN: AI models found no manipulation across sampled frames.")
+            
+        full_analysis = "\n".join(report_lines)
+        
+        return {
+            "verdict": verdict,
+            "confidence_score": f"{display_score:.2f}%",
+            "analysis": full_analysis
+        }
+
+    except Exception as e:
+        print(f"❌ Video Error: {e}")
+        return {"verdict": "ERROR", "confidence_score": "0.00%", "analysis": f"Internal Server Error: {str(e)}"}
+        
+    finally:
+        # ALWAYS clean up the massive video file from the server memory
+        if video_path and os.path.exists(video_path):
+            os.remove(video_path)
+            print(f"🧹 Cleaned up temporary video file: {video_path}")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
