@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -7,26 +8,31 @@
   --color-cyber-neon: #00f3ff;
   --color-cyber-danger: #ff003c;
   --color-cyber-safe: #00ff9f;
+  --color-signal-gold: #f5d061;
+  --color-signal-sunset: #ff7b54;
 
-  --font-mono: "Courier New", monospace;
-  
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-display: "Space Grotesk", sans-serif;
+
   --animate-pulse-fast: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--color-cyber-black);
   color: #e0e0e0;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-display);
   overflow-x: hidden;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-cyber-neon); }
 
-/* Thin scrollbar for mini terminal */
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }

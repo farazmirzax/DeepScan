@@ -10,8 +10,8 @@ import io
 import numpy as np
 
 #Deepfake video imports
-from services.video_downloader import download_video
-from services.face_extractor import extract_faces_from_video
+from .services.video_downloader import download_video
+from .services.face_extractor import extract_faces_from_video
 
 # --- IMPORTS & SETUP ---
 try:
