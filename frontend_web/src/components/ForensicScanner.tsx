@@ -14,9 +14,11 @@ const SCAN_STEPS = [
 
 interface ForensicScannerProps {
   imageUrl: string | null;
+  mode?: 'image' | 'video';
+  videoUrl?: string;
 }
 
-export default function ForensicScanner({ imageUrl }: ForensicScannerProps) {
+export default function ForensicScanner({ imageUrl, mode = 'image', videoUrl }: ForensicScannerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [progressPercent, setProgressPercent] = useState(0);
@@ -57,13 +59,25 @@ export default function ForensicScanner({ imageUrl }: ForensicScannerProps) {
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center gap-8 px-6 lg:flex-row lg:gap-12">
         <div className="relative shrink-0">
           <div className="relative h-72 w-72 sm:h-80 sm:w-80">
-            {imageUrl && (
+            {mode === 'image' && imageUrl && (
               <img
                 src={imageUrl}
                 alt="Scanning"
                 className="h-full w-full rounded-lg object-cover"
                 style={{ filter: 'grayscale(30%) contrast(1.1)' }}
               />
+            )}
+            {mode === 'video' && (
+              <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-cyber-neon/50 bg-cyber-black/80 p-6">
+                <div className="mb-4 text-cyan-400">
+                  <svg className="h-16 w-16 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="font-mono text-xs tracking-wider text-gray-400">VIDEO STREAM</p>
+                <p className="mt-2 break-all text-center font-mono text-[10px] text-cyan-400/60">{videoUrl}</p>
+              </div>
             )}
 
             <motion.div
@@ -124,7 +138,9 @@ export default function ForensicScanner({ imageUrl }: ForensicScannerProps) {
           </div>
 
           <div className="mt-3 text-center">
-            <span className="font-mono text-[10px] tracking-[0.3em] text-gray-600">SUBJECT // IMAGE-001</span>
+            <span className="font-mono text-[10px] tracking-[0.3em] text-gray-600">
+              {mode === 'image' ? 'SUBJECT // IMAGE-001' : 'SUBJECT // VIDEO-ANALYSIS'}
+            </span>
           </div>
         </div>
 

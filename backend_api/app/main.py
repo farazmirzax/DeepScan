@@ -297,6 +297,7 @@ async def scan_video(request: VideoRequest):
         
         highest_fake_score = 0.0
         critical_flags = []
+        frame_details = []  # Log all frame scores for transparency
         
         # --- PHASE 3: SCAN EACH FRAME ---
         for i, face_img in enumerate(faces):
@@ -313,19 +314,23 @@ async def scan_video(request: VideoRequest):
                 frame_score = max(score_swap, score_gen) * 100
             else:
                 frame_score = ((score_swap * 0.5) + (score_gen * 0.5)) * 100
+            
+            # Log detailed frame information
+            frame_details.append(f"Frame {i+1}: Vigilante={score_swap*100:.1f}% | Sentinel={score_gen*100:.1f}% | Combined={frame_score:.1f}%")
+            print(f"   📹 {frame_details[-1]}")
                 
             # Track the highest threat level across the whole video
             if frame_score > highest_fake_score:
                 highest_fake_score = frame_score
                 
-            # Log specific frame threats
-            if score_swap > 0.9:
-                critical_flags.append(f"• Frame {i+1}: Vigilante-V2 detected Face Swap artifacts ({score_swap*100:.1f}%).")
-            if score_gen > 0.9:
-                critical_flags.append(f"• Frame {i+1}: Sentinel-X detected GAN textures ({score_gen*100:.1f}%).")
+            # Flag frames with moderate-to-high suspicion (lowered threshold from 90% to 70%)
+            if score_swap > 0.7:
+                critical_flags.append(f"• Frame {i+1}: Vigilante-V2 detected Face Swap artifacts ({score_swap*100:.1f}% confidence).")
+            if score_gen > 0.7:
+                critical_flags.append(f"• Frame {i+1}: Sentinel-X detected Synthetic content ({score_gen*100:.1f}% confidence).")
 
-        # --- PHASE 4: VERDICT LOGIC (Zero-Trust MAX Logic) ---
-        verdict = "FAKE" if highest_fake_score > 50 else "REAL"
+        # --- PHASE 4: VERDICT LOGIC (Raised threshold from 70% to 80% for high accuracy) ---
+        verdict = "FAKE" if highest_fake_score > 80 else "REAL"
         
         display_score = highest_fake_score
         if verdict == "REAL":
@@ -333,12 +338,22 @@ async def scan_video(request: VideoRequest):
             
         # --- PHASE 5: COMPILE REPORT ---
         report_lines = [f"• VIDEO SCAN COMPLETE: Analyzed {len(faces)} facial keyframes."]
+        report_lines.append(f"• Highest threat level detected: {highest_fake_score:.1f}%")
+        report_lines.append("")  # Spacer
         
         if verdict == "FAKE":
+            report_lines.append("⚠️  VERDICT: LIKELY FAKE")
+            report_lines.append("")
             # Remove duplicates using set, but keep order
             report_lines.extend(list(dict.fromkeys(critical_flags)))
         else:
-            report_lines.append("• CLEAN: AI models found no manipulation across sampled frames.")
+            report_lines.append("✓ VERDICT: LIKELY REAL")
+            report_lines.append("• No significant manipulation detected across sampled frames.")
+        
+        # Add all frame details for transparency
+        report_lines.append("")
+        report_lines.append("📊 Detailed Frame Analysis:")
+        report_lines.extend(frame_details)
             
         full_analysis = "\n".join(report_lines)
         

@@ -9,6 +9,20 @@ import os
 # It's fast, lightweight, and works on EVERY Python version.
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+def calculate_image_sharpness(image_array):
+    """
+    Calculate image sharpness using Laplacian variance.
+    Higher value = sharper/clearer image
+    Lower value = blurry image
+    """
+    if image_array is None or image_array.size == 0:
+        return 0
+    
+    gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
+    laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+    variance = laplacian.var()
+    return variance
+
 def get_face_crop(image_bytes):
     """
     Takes raw image bytes (from a file upload), finds the face using OpenCV, 
@@ -56,6 +70,7 @@ def extract_faces_from_video(video_path, max_frames=5):
     """
     Takes a video file path (mp4).
     Scans through the video and returns a LIST of cropped face images (PIL Images).
+    Filters out blurry/poor quality frames for better detection accuracy.
     """
     cap = cv2.VideoCapture(video_path)
     faces_found = []
@@ -76,12 +91,21 @@ def extract_faces_from_video(video_path, max_frames=5):
     
     print(f"🎞️ Scanning video: {total_frames} frames. Checking every {skip_step}th frame...")
 
+    SHARPNESS_THRESHOLD = 100  # Minimum sharpness score (filters blurry frames)
+
     for i in range(0, total_frames, skip_step):
         cap.set(cv2.CAP_PROP_POS_FRAMES, i)
         ret, frame = cap.read()
         
         if not ret:
             break
+        
+        # --- QUALITY CHECK: Calculate frame sharpness ---
+        sharpness = calculate_image_sharpness(frame)
+        
+        if sharpness < SHARPNESS_THRESHOLD:
+            print(f"   ⚠️  Frame {i}: Skipped (too blurry, sharpness={sharpness:.1f})")
+            continue
             
         # Convert frame to bytes so we can reuse our existing get_face_crop logic!
         # This keeps our code clean and consistent.
@@ -92,7 +116,8 @@ def extract_faces_from_video(video_path, max_frames=5):
             
             if face:
                 faces_found.append(face)
+                print(f"   ✓ Frame {i}: Valid face extracted (sharpness={sharpness:.1f})")
     
     cap.release()
-    print(f"✅ Extracted {len(faces_found)} valid faces from video.")
+    print(f"✅ Extracted {len(faces_found)} valid high-quality faces from video.")
     return faces_found

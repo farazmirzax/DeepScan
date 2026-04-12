@@ -235,7 +235,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
 
                   {/* Details */}
                   <div className={`inline-flex items-center gap-2 text-xs font-medium bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
-                    <div className={`h-1 w-1 rounded-full bg-gradient-to-r ${color}`} />
+                    <div className={`h-1.5 w-1.5 rounded-full bg-gradient-to-r ${color}`} />
                     {details}
                   </div>
 

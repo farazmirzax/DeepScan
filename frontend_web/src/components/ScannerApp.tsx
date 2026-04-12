@@ -146,6 +146,8 @@ export default function ScannerApp({ onBack }: ScannerAppProps) {
                 setActiveTab('image');
                 setResult(null);
                 setError(null);
+                setPreview(null);
+                setUrl('');
               }}
               className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-3 transition-all duration-300 ${
                 activeTab === 'image'
@@ -160,6 +162,8 @@ export default function ScannerApp({ onBack }: ScannerAppProps) {
                 setActiveTab('video');
                 setResult(null);
                 setError(null);
+                setPreview(null);
+                setUrl('');
               }}
               className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-3 transition-all duration-300 ${
                 activeTab === 'video'
@@ -171,7 +175,7 @@ export default function ScannerApp({ onBack }: ScannerAppProps) {
             </button>
           </div>
 
-          {loading && <ForensicScanner imageUrl={preview} />}
+          {loading && <ForensicScanner imageUrl={preview} mode={activeTab} videoUrl={activeTab === 'video' ? url : undefined} />}
 
           <div className="group relative flex min-h-[250px] flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-700 bg-black/40 transition-colors hover:border-cyber-neon/50">
             {activeTab === 'image' ? (
