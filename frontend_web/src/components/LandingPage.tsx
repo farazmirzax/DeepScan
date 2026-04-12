@@ -8,6 +8,9 @@ import {
   Radar,
   ShieldCheck,
   Sparkles,
+  Upload,
+  Zap,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -16,32 +19,53 @@ interface LandingPageProps {
 
 const capabilities = [
   {
-    icon: Eye,
-    title: 'Visual Forensics',
-    description: 'Inspect image artifacts, face geometry shifts, and subtle generation signatures in one streamlined workflow.',
-  },
-  {
-    icon: Clapperboard,
-    title: 'Video Link Intake',
-    description: 'Pass a public video URL into the pipeline and let the app collect frames for investigation.',
-  },
-  {
     icon: BrainCircuit,
-    title: 'Model-Assisted Verdicts',
-    description: 'Blend detector confidence with readable diagnostics so the result feels explainable, not mysterious.',
+    title: 'Vigilante-V2: Swap Hunter',
+    description: 'Specialized Vision Transformer that detects face swaps and traditional deepfakes with 92% accuracy.',
+  },
+  {
+    icon: Eye,
+    title: 'Sentinel-X: GenAI Hunter',
+    description: 'Identifies AI-generated faces, GANs, and synthetic content with deep learning analysis.',
+  },
+  {
+    icon: Radar,
+    title: 'Prism: Digital Forensics',
+    description: 'Inspects metadata, pixel compression anomalies, and facial geometry to find editing traces.',
   },
 ];
 
 const stats = [
-  { value: '2 modes', label: 'Image upload and video URL analysis' },
-  { value: 'Live scan', label: 'Animated forensic pipeline feedback' },
-  { value: 'Readable logs', label: 'Evidence-style result breakdown' },
+  { value: 'Triple-Agent', label: 'Three specialized detection systems' },
+  { value: 'AI + Forensics', label: 'Machine learning meets digital forensics' },
+  { value: '100% Explainable', label: 'Every verdict backed by evidence logs' },
 ];
 
 const workflow = [
-  'Upload an image or paste a supported video link.',
-  'Run the forensic pipeline and watch the scan stages unfold.',
-  'Review the verdict, confidence score, and diagnostic evidence log.',
+  {
+    icon: Upload,
+    title: 'Upload Media',
+    description: 'Submit an image or video URL for analysis. Supports JPG, PNG, WEBP, and YouTube links.',
+    details: 'Fast processing with no data storage',
+    color: 'from-[#ff7b54] to-[#ff9f71]',
+    iconBg: 'bg-[#ff7b54]/20 text-[#ff7b54]',
+  },
+  {
+    icon: Zap,
+    title: 'Run Triple-Agent Pipeline',
+    description: 'DeepScan simultaneously queries Vigilante-V2, Sentinel-X, and Prism forensics.',
+    details: '3-5 seconds for images, 10-20 seconds for videos',
+    color: 'from-[#6ee7ff] to-[#8ed9ff]',
+    iconBg: 'bg-[#6ee7ff]/20 text-[#6ee7ff]',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Get Explainable Verdict',
+    description: 'Receive a detailed verdict with AI confidence scores and forensic evidence logs.',
+    details: 'Understand why, not just what',
+    color: 'from-[#f5d061] to-[#ffe28d]',
+    iconBg: 'bg-[#f5d061]/20 text-[#f5d061]',
+  },
 ];
 
 export default function LandingPage({ onLaunch }: LandingPageProps) {
@@ -60,13 +84,13 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
               DeepScan Forensics
             </div>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-white md:text-4xl">
-              A sharper front door for your deepfake detection system.
+              Detect deepfakes and AI-generated media with confidence.
             </h1>
           </div>
 
           <div className="flex items-center gap-3 self-start rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm text-white/70 backdrop-blur">
             <BadgeCheck className="h-4 w-4 text-[#f5d061]" />
-            Built to explain what the application does before analysis begins
+            AI models + digital forensics in one platform
           </div>
         </header>
 
@@ -80,16 +104,16 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             >
               <div className="inline-flex items-center gap-2 rounded-full border border-[#8ed9ff]/30 bg-[#0b1b2d]/70 px-4 py-2 text-sm text-[#cdefff] backdrop-blur">
                 <Sparkles className="h-4 w-4 text-[#f5d061]" />
-                Detect manipulated media with a more confident user journey
+                Professional-grade deepfake detection system
               </div>
 
               <div className="space-y-4">
                 <h2 className="max-w-4xl font-display text-5xl font-semibold leading-none tracking-tight text-white md:text-7xl">
-                  Investigate images and videos with a landing page that builds trust first.
+                  Analyze images and videos for deepfakes using AI and forensics.
                 </h2>
                 <p className="max-w-2xl text-lg leading-8 text-slate-200/82 md:text-xl">
-                  Instead of dropping visitors directly into the scanner, this page frames the mission, highlights capabilities,
-                  and guides them into the actual analysis experience with more clarity and impact.
+                  DeepScan combines two specialized Vision Transformers with a forensic analysis engine to detect face swaps, 
+                  synthetic media, and edited content. Every verdict is backed by explainable evidence.
                 </p>
               </div>
 
@@ -138,8 +162,8 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
           >
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-[#8ed9ff]">Mission Snapshot</div>
-                <div className="mt-2 font-display text-2xl text-white">What this application delivers</div>
+                <div className="text-xs uppercase tracking-[0.3em] text-[#8ed9ff]">Detection Agents</div>
+                <div className="mt-2 font-display text-2xl text-white">Your forensic team</div>
               </div>
               <div className="rounded-2xl bg-[#f5d061]/16 p-3 text-[#f5d061]">
                 <ShieldCheck className="h-6 w-6" />
@@ -164,29 +188,59 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
 
         <section id="overview" className="grid gap-6 border-t border-white/10 py-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4">
-            <div className="text-sm uppercase tracking-[0.35em] text-[#8ed9ff]">Application Story</div>
+            <div className="text-sm uppercase tracking-[0.35em] text-[#8ed9ff]">How It Works</div>
             <h2 className="font-display text-4xl font-semibold text-white md:text-5xl">
-              Explain the workflow before people commit to the tool.
+              Three detection agents working together.
             </h2>
             <p className="max-w-xl text-base leading-7 text-white/72">
-              This landing page sets the context: what DeepScan checks, how the analysis runs, and why the verdict feels grounded
-              in evidence rather than just a black-box label.
+              DeepScan processes media through AI models for detection, then adds forensic analysis for verification. 
+              The result is a verdict grounded in both machine learning and digital evidence.
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {workflow.map((step, index) => (
+          <div className="grid gap-6 md:grid-cols-3">
+            {workflow.map(({ icon: Icon, title, description, details, color, iconBg }, index) => (
               <motion.div
-                key={step}
+                key={title}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 * index }}
-                className="rounded-[1.5rem] border border-white/10 bg-white/6 p-5 backdrop-blur"
+                whileHover={{ y: -4 }}
+                className="group relative"
               >
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#ff7b54] font-display text-lg font-semibold text-slate-950">
-                  {index + 1}
+                {/* Gradient border background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${color} rounded-[1.5rem] opacity-0 group-hover:opacity-20 blur transition-opacity duration-300`} />
+                
+                {/* Card container */}
+                <div className="relative rounded-[1.5rem] border border-white/10 bg-slate-950/40 backdrop-blur transition-all duration-300 group-hover:border-white/20 group-hover:bg-slate-950/60 p-6 h-full flex flex-col">
+                  {/* Step indicator + Icon */}
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${iconBg} transition-transform duration-300 group-hover:scale-110`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className={`text-xs font-bold tracking-[0.2em] bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
+                      STEP {index + 1}
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-display text-xl font-semibold text-white mb-2 leading-tight">
+                    {title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-sm leading-6 text-white/75 mb-4 flex-grow">
+                    {description}
+                  </p>
+
+                  {/* Details */}
+                  <div className={`inline-flex items-center gap-2 text-xs font-medium bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
+                    <div className={`h-1 w-1 rounded-full bg-gradient-to-r ${color}`} />
+                    {details}
+                  </div>
+
+
                 </div>
-                <p className="text-sm leading-6 text-white/78">{step}</p>
               </motion.div>
             ))}
           </div>
