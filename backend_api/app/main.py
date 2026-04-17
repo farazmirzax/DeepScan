@@ -237,7 +237,7 @@ async def scan_image(file: UploadFile = File(...)):
             # Weighted Average: 50% Swap, 50% GenAI
             final_score = ((score_swap * 0.5) + (score_gen * 0.5)) * 100
             
-        verdict = "FAKE" if final_score > 50 else "REAL"
+        verdict = "FAKE" if final_score > 80 else "REAL"
         
         # Display Score Logic
         display_score = final_score

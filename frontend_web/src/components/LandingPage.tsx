@@ -79,13 +79,16 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 lg:px-10">
         <header className="flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-3 text-sm uppercase tracking-[0.35em] text-[#8ed9ff]">
-              <ShieldCheck className="h-4 w-4" />
-              DeepScan Forensics
+            <div className="mb-4 flex items-center gap-2 text-[#8ed9ff]">
+              <ShieldCheck className="h-5 w-5" />
+              <span className="font-semibold tracking-[0.15em] uppercase text-xs">Digital Forensics AI</span>
             </div>
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-white md:text-4xl">
-              Detect deepfakes and AI-generated media with confidence.
+            <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight leading-tight mb-2 bg-gradient-to-r from-[#6ee7ff] via-[#ff7b54] to-[#f5d061] text-transparent bg-clip-text">
+              DeepScan
             </h1>
+            <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide">
+              Trust no media. Verify everything.
+            </p>
           </div>
 
           <div className="flex items-center gap-3 self-start rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm text-white/70 backdrop-blur">
@@ -108,8 +111,8 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
               </div>
 
               <div className="space-y-4">
-                <h2 className="max-w-4xl font-display text-5xl font-semibold leading-none tracking-tight text-white md:text-7xl">
-                  Analyze images and videos for deepfakes using AI and forensics.
+                <h2 className="max-w-4xl font-display text-5xl font-semibold leading-none tracking-tight md:text-7xl">
+                  <span className="bg-gradient-to-r from-[#6ee7ff] to-[#8ed9ff] text-transparent bg-clip-text">Analyze</span> images and videos for <span className="bg-gradient-to-r from-[#ff7b54] to-[#ff9f71] text-transparent bg-clip-text">deepfakes</span> using <span className="bg-gradient-to-r from-[#f5d061] to-[#ffe28d] text-transparent bg-clip-text">AI and forensics</span>.
                 </h2>
                 <p className="max-w-2xl text-lg leading-8 text-slate-200/82 md:text-xl">
                   DeepScan combines two specialized Vision Transformers with a forensic analysis engine to detect face swaps, 

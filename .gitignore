@@ -23,3 +23,6 @@ Thumbs.db
 
 # 5. Ignore Flutter app (complete folder)
 frontend_app/
+
+benchmark
+backend_api/run_benchmark.py
