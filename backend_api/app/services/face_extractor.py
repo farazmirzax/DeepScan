@@ -23,48 +23,39 @@ def calculate_image_sharpness(image_array):
     variance = laplacian.var()
     return variance
 
-def get_face_crop(image_bytes):
+def get_all_face_crops(image_bytes):
     """
-    Takes raw image bytes (from a file upload), finds the face using OpenCV, 
-    and returns the cropped PIL Image.
+    Takes raw image bytes, finds ALL faces using OpenCV, 
+    and returns a list of cropped PIL Images.
     """
-    # 1. Convert bytes to OpenCV format
     nparr = np.frombuffer(image_bytes, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     
     if image is None:
-        return None
+        return []
 
-    # 2. Convert to Grayscale (Face detectors need black & white)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # 3. Detect Faces
-    # scaleFactor=1.1, minNeighbors=5 are standard settings
     faces = face_cascade.detectMultiScale(gray, 1.1, 5)
 
     if len(faces) == 0:
-        # print("❌ No face detected by OpenCV.") 
-        # (Commented out print to keep logs clean during video scanning)
-        return None
+        return []
 
-    # 4. Get the biggest face (if multiple, pick the main one)
-    # (x, y, w, h) are the coordinates
-    x, y, w, h = faces[0] 
-    
-    # 5. Add Padding (Don't crop too tight!)
+    extracted_faces = []
     padding = 40
     height, width, _ = image.shape
-    
-    x = max(0, x - padding)
-    y = max(0, y - padding)
-    w = min(width - x, w + (padding * 2))
-    h = min(height - y, h + (padding * 2))
 
-    # 6. Crop and Convert back to RGB
-    face_crop = image[y:y+h, x:x+w]
-    face_rgb = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
-    
-    return Image.fromarray(face_rgb)
+    # LOOP through ALL faces instead of just picking faces[0]
+    for (x, y, w, h) in faces:
+        px = max(0, x - padding)
+        py = max(0, y - padding)
+        pw = min(width - px, w + (padding * 2))
+        ph = min(height - py, h + (padding * 2))
+
+        face_crop = image[py:py+ph, px:px+pw]
+        face_rgb = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
+        extracted_faces.append(Image.fromarray(face_rgb))
+        
+    return extracted_faces
 
 def extract_faces_from_video(video_path, max_frames=5):
     """
@@ -109,14 +100,16 @@ def extract_faces_from_video(video_path, max_frames=5):
             
         # Convert frame to bytes so we can reuse our existing get_face_crop logic!
         # This keeps our code clean and consistent.
+       # Change this section inside extract_faces_from_video:
         is_success, buffer = cv2.imencode(".jpg", frame)
         if is_success:
             byte_data = buffer.tobytes()
-            face = get_face_crop(byte_data) # Reuse the function above ⬆️
+            # Use the new multi-face function
+            faces_in_frame = get_all_face_crops(byte_data) 
             
-            if face:
-                faces_found.append(face)
-                print(f"   ✓ Frame {i}: Valid face extracted (sharpness={sharpness:.1f})")
+            if faces_in_frame:
+                faces_found.extend(faces_in_frame) # Use .extend() to add the whole list
+                print(f"   ✓ Frame {i}: {len(faces_in_frame)} valid faces extracted.")
     
     cap.release()
     print(f"✅ Extracted {len(faces_found)} valid high-quality faces from video.")

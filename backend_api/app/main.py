@@ -13,6 +13,9 @@ import numpy as np
 from .services.video_downloader import download_video
 from .services.face_extractor import extract_faces_from_video
 
+#Deeepfake images import
+from .services.face_extractor import get_all_face_crops
+
 # --- IMPORTS & SETUP ---
 try:
     import mediapipe as mp
@@ -54,7 +57,7 @@ except Exception as e:
     detector_swap = None
     detector_gen = None
 
-# --- 3. THE NEW AGENT: PRISM (Forensics) 🔬 ---
+# --- 3. THE FORENSIC AGENT: PRISM (Forensics) 🔬 ---
 class PrismAgent:
     @staticmethod
     def scan_metadata(image: Image.Image):
@@ -119,7 +122,7 @@ class PrismAgent:
             
             with mp_face_mesh.FaceMesh(
                 static_image_mode=True,
-                max_num_faces=1,
+                max_num_faces=10,
                 refine_landmarks=True,
                 min_detection_confidence=0.5
             ) as face_mesh:
@@ -194,69 +197,80 @@ class VideoRequest(BaseModel):
 async def scan_image(file: UploadFile = File(...)):
     print(f"📸 Agent received image: {file.filename}")
     
-    # Save temp file for Prism
+    # Save temp file for Prism and Extractor
     temp_filename = f"temp_{file.filename}"
     with open(temp_filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
     try:
-        # Load Image
-        image = Image.open(temp_filename)
+        # Read the file bytes directly for the new multi-face extractor
+        with open(temp_filename, "rb") as img_file:
+            img_bytes = img_file.read()
+            
+        faces = get_all_face_crops(img_bytes)
         
-        # --- PHASE 1: AI MODELS ---
-        if detector_swap and detector_gen:
-            preds_swap = detector_swap(image)
-            preds_gen = detector_gen(image)
-            score_swap = get_fake_probability(preds_swap, "Vigilante-V2")
-            score_gen = get_fake_probability(preds_gen, "Sentinel-X")
+        highest_fake_score = 0.0
+        face_details = []
+        report_lines = []
+
+        if len(faces) == 0:
+            print("   ⚠️ No faces detected via OpenCV, falling back to full image scan.")
+            faces = [Image.open(temp_filename)]
         else:
-            score_swap, score_gen = 0.5, 0.5 # Fail safe
+            print(f"   🧑‍🤝‍🧑 Batch Processing: {len(faces)} faces detected.")
+
+        # --- PHASE 1: AI MODELS (Batch Process All Faces) ---
+        for i, face_img in enumerate(faces):
+            if detector_swap and detector_gen:
+                preds_swap = detector_swap(face_img)
+                preds_gen = detector_gen(face_img)
+                score_swap = get_fake_probability(preds_swap, "Vigilante-V2")
+                score_gen = get_fake_probability(preds_gen, "Sentinel-X")
+            else:
+                score_swap, score_gen = 0.5, 0.5 
+
+            # Calculate individual face score
+            if score_swap > 0.9 or score_gen > 0.9:
+                face_score = max(score_swap, score_gen) * 100
+            else:
+                face_score = ((score_swap * 0.5) + (score_gen * 0.5)) * 100
+            
+            face_details.append(f"• Face {i+1}: Threat Level {face_score:.1f}% (Swap: {score_swap*100:.1f}%, Gen: {score_gen*100:.1f}%)")
+            
+            # Track the most manipulated face in the group
+            if face_score > highest_fake_score:
+                highest_fake_score = face_score
 
         # --- PHASE 2: PRISM FORENSICS ---
+        # We run Prism on the FULL image, because checking compression (ELA) 
+        # on tiny cropped faces gives inaccurate results.
+        full_image = Image.open(temp_filename)
         prism_logs = []
-        prism_logs.extend(PrismAgent.scan_metadata(image))
-        prism_logs.extend(PrismAgent.scan_ela(image))
+        prism_logs.extend(PrismAgent.scan_metadata(full_image))
+        prism_logs.extend(PrismAgent.scan_ela(full_image))
         prism_logs.extend(PrismAgent.scan_face_geometry(temp_filename))
 
         # --- PHASE 3: VERDICT LOGIC (Weighted Ensemble) ---
-        # Weights: Vigilante (40%), Sentinel (40%), Forensic ELA (20%)
-        
-        # Calculate ELA risk score (0.0 to 1.0) based on max_diff
-        ela_risk = 0.0
-        # We assume max_diff > 15 is suspicious. Let's cap it at 50 for 100% risk.
-        ela_value = PrismAgent.scan_ela(image) # Note: We need to refactor scan_ela to return value, not just string.
-        # actually, let's keep it simple and just weigh the AI models for now to avoid rewriting the Prism class.
-        
-        # Simple Weighted Logic for Phase 1:
-        # If either model is VERY confident (>90%), we trust it completely (Security Override).
-        # Otherwise, we take a weighted average to reduce false positives.
-        
-        if score_swap > 0.9 or score_gen > 0.9:
-            final_score = max(score_swap, score_gen) * 100
-        else:
-            # Weighted Average: 50% Swap, 50% GenAI
-            final_score = ((score_swap * 0.5) + (score_gen * 0.5)) * 100
-            
-        verdict = "FAKE" if final_score > 80 else "REAL"
+        verdict = "FAKE" if highest_fake_score > 80 else "REAL"
         
         # Display Score Logic
-        display_score = final_score
+        display_score = highest_fake_score
         if verdict == "REAL":
-            display_score = 100 - final_score
+            display_score = 100 - highest_fake_score
 
         # --- PHASE 4: GENERATE RICH REPORT ---
-        report_lines = []
-        
         # 1. The Headlines
         if verdict == "FAKE":
-            if score_swap > 0.9:
-                report_lines.append(f"• CRITICAL: Vigilante-V2 detected distinct Face Swap artifacts ({score_swap*100:.1f}% confidence).")
-            if score_gen > 0.9:
-                report_lines.append(f"• CRITICAL: Sentinel-X detected AI Generative textures ({score_gen*100:.1f}% confidence).")
+            report_lines.append(f"• CRITICAL: Multi-subject scan detected anomalies (Max Threat: {highest_fake_score:.1f}%).")
         else:
-             report_lines.append(f"• CLEAN: AI models found no manipulation traces.")
+             report_lines.append(f"• CLEAN: AI models found no significant manipulation across {len(faces)} face(s).")
 
-        # 2. The Forensics (Prism)
+        # 2. Detailed Face Breakdown
+        report_lines.append("\n📊 Face-by-Face Analysis:")
+        report_lines.extend(face_details)
+
+        # 3. The Forensics (Prism)
+        report_lines.append("\n🔬 Prism Forensic Engine Results:")
         for log in prism_logs:
             report_lines.append(f"• {log}")
 
@@ -271,7 +285,7 @@ async def scan_image(file: UploadFile = File(...)):
 
     except Exception as e:
         print(f"❌ Error: {e}")
-        return {"verdict": "ERROR", "analysis": str(e)}
+        return {"verdict": "ERROR", "confidence_score": "0.00%", "analysis": str(e)}
     
     finally:
         if os.path.exists(temp_filename):
