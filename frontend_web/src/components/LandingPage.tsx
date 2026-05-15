@@ -3,7 +3,6 @@ import {
   ArrowRight,
   BadgeCheck,
   BrainCircuit,
-  Clapperboard,
   Eye,
   Radar,
   ShieldCheck,

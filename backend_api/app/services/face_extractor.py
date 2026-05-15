@@ -35,7 +35,13 @@ def get_all_face_crops(image_bytes):
         return []
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    gray = cv2.equalizeHist(gray)
+    faces = face_cascade.detectMultiScale(
+        gray,
+        scaleFactor=1.05,
+        minNeighbors=4,
+        minSize=(24, 24)
+    )
 
     if len(faces) == 0:
         return []
@@ -44,8 +50,36 @@ def get_all_face_crops(image_bytes):
     padding = 40
     height, width, _ = image.shape
 
-    # LOOP through ALL faces instead of just picking faces[0]
-    for (x, y, w, h) in faces:
+    # Sort largest-to-smallest so a dominant portrait face stays primary.
+    sorted_faces = sorted(faces, key=lambda face: face[2] * face[3], reverse=True)
+    largest_area = sorted_faces[0][2] * sorted_faces[0][3]
+
+    kept_boxes = []
+
+    for (x, y, w, h) in sorted_faces:
+        area = w * h
+        # Ignore tiny likely-false detections when one portrait face dominates the frame.
+        if area < max(2500, largest_area * 0.2):
+            continue
+
+        # Ignore overlapping duplicate detections around the same portrait face.
+        duplicate = False
+        for (kx, ky, kw, kh) in kept_boxes:
+            ix1 = max(x, kx)
+            iy1 = max(y, ky)
+            ix2 = min(x + w, kx + kw)
+            iy2 = min(y + h, ky + kh)
+            inter_w = max(0, ix2 - ix1)
+            inter_h = max(0, iy2 - iy1)
+            intersection = inter_w * inter_h
+            union = area + (kw * kh) - intersection
+            if union > 0 and (intersection / union) > 0.35:
+                duplicate = True
+                break
+
+        if duplicate:
+            continue
+
         px = max(0, x - padding)
         py = max(0, y - padding)
         pw = min(width - px, w + (padding * 2))
@@ -54,8 +88,10 @@ def get_all_face_crops(image_bytes):
         face_crop = image[py:py+ph, px:px+pw]
         face_rgb = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
         extracted_faces.append(Image.fromarray(face_rgb))
-        
-    return extracted_faces
+        kept_boxes.append((x, y, w, h))
+
+    # Keep the scan bounded and stable for group images.
+    return extracted_faces[:6]
 
 def extract_faces_from_video(video_path, max_frames=5):
     """

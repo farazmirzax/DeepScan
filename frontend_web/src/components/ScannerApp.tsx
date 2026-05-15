@@ -17,6 +17,25 @@ interface AnalysisResult {
   verdict: 'REAL' | 'FAKE' | 'ERROR';
   confidence_score: string;
   analysis: string;
+  summary?: string;
+  sections?: AnalysisSection[];
+  meta?: ResultMeta;
+}
+
+interface AnalysisSection {
+  title: string;
+  tone: 'danger' | 'safe' | 'warning' | 'info' | 'neutral';
+  items: string[];
+}
+
+interface ResultMeta {
+  faces_detected?: number;
+  frames_analyzed?: number;
+  subject_profile?: string;
+  omni_label?: string;
+  threat_score?: number;
+  decision_confidence?: number;
+  display_verdict?: string;
 }
 
 interface ScannerAppProps {
@@ -105,6 +124,14 @@ export default function ScannerApp({ onBack }: ScannerAppProps) {
         <span className="leading-relaxed">{cleanLine}</span>
       </motion.div>
     );
+  };
+
+  const sectionToneStyles: Record<AnalysisSection['tone'], string> = {
+    danger: 'border-red-500/30 bg-red-950/20',
+    safe: 'border-emerald-500/30 bg-emerald-950/20',
+    warning: 'border-amber-500/30 bg-amber-950/20',
+    info: 'border-cyan-500/30 bg-cyan-950/20',
+    neutral: 'border-white/10 bg-white/[0.03]',
   };
 
   return (
@@ -279,31 +306,97 @@ export default function ScannerApp({ onBack }: ScannerAppProps) {
                           result.verdict === 'FAKE' ? 'text-cyber-danger' : 'text-cyber-safe'
                         }`}
                       >
-                        {result.verdict === 'FAKE' ? 'DETECTED: DEEPFAKE' : 'VERIFIED: REAL'}
+                        {result.meta?.display_verdict ?? (result.verdict === 'FAKE' ? 'DETECTED: DEEPFAKE' : 'LIKELY REAL')}
                       </h2>
                       <p className="text-xs uppercase tracking-widest text-white/60">Forensic Analysis Complete</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="mb-1 text-sm text-white/50">CONFIDENCE SCORE</div>
+                    <div className="mb-1 text-sm text-white/50">THREAT SCORE</div>
                     <div
                       className={`text-4xl font-bold font-mono ${
                         result.verdict === 'FAKE' ? 'text-cyber-danger' : 'text-cyber-safe'
                       }`}
                     >
-                      {result.confidence_score}
+                      {typeof result.meta?.threat_score === 'number' ? `${result.meta.threat_score}%` : result.confidence_score}
                     </div>
+                    {typeof result.meta?.decision_confidence === 'number' && (
+                      <div className="mt-2 text-xs uppercase tracking-[0.2em] text-white/45">
+                        Decision Confidence {result.meta.decision_confidence}%
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="border-t border-white/5 bg-black/60 p-6">
-                  <div className="mb-4 flex gap-2 border-b border-white/10 pb-2 text-xs font-bold uppercase tracking-widest text-cyber-neon/80">
-                    <Terminal size={14} /> FORENSIC DIAGNOSTICS LOG
+                  <div className="mb-6 flex flex-col gap-4 border-b border-white/10 pb-5">
+                    <div className="flex gap-2 text-xs font-bold uppercase tracking-widest text-cyber-neon/80">
+                      <Terminal size={14} /> Structured Analysis Report
+                    </div>
+
+                    {result.summary && (
+                      <p className="max-w-3xl text-sm leading-7 text-white/75">
+                        {result.summary}
+                      </p>
+                    )}
+
+                    {result.meta && (
+                      <div className="flex flex-wrap gap-3">
+                        {result.meta.subject_profile && (
+                          <span className="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-cyan-200">
+                            {result.meta.subject_profile}
+                          </span>
+                        )}
+                        {typeof result.meta.faces_detected === 'number' && (
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70">
+                            Faces: {result.meta.faces_detected}
+                          </span>
+                        )}
+                        {typeof result.meta.frames_analyzed === 'number' && (
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70">
+                            Frames: {result.meta.frames_analyzed}
+                          </span>
+                        )}
+                        {result.meta.omni_label && (
+                          <span className="rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-amber-200">
+                            Omni: {result.meta.omni_label}
+                          </span>
+                        )}
+                        {typeof result.meta.threat_score === 'number' && (
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70">
+                            Threat: {result.meta.threat_score}%
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col">
-                    {result.analysis.split('\n').map((line, idx) => formatAnalysisLine(line, idx))}
-                  </div>
+                  {result.sections && result.sections.length > 0 ? (
+                    <div className="grid gap-4">
+                      {result.sections.map((section) => (
+                        <div
+                          key={section.title}
+                          className={`rounded-2xl border p-4 ${sectionToneStyles[section.tone]}`}
+                        >
+                          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-white/85">
+                            {section.title}
+                          </div>
+                          <div className="space-y-2">
+                            {section.items.map((item, index) => (
+                              <div key={`${section.title}-${index}`} className="flex items-start gap-3 text-sm leading-7 text-white/78">
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyber-neon" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      {result.analysis.split('\n').map((line, idx) => formatAnalysisLine(line, idx))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
